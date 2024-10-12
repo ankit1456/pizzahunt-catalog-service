@@ -3,3 +3,7 @@
 <!-- Build the image -->
 
 <!-- docker build -t node-template:dev -f docker/dev/Dockerfile . -->
+
+<!-- docker volume create pizzahunt-catalog-service-data -->
+<!-- docker run  --name pizzahunt-catalog-service-db  -e MONGO_INITDB_ROOT_USERNAME=root -e MONGO_INITDB_ROOT_PASSWORD=root -v pizzahunt-catalog-service-data:/data/db -p
+ 27017:27017 -d mongo -->
