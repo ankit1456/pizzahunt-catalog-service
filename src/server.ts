@@ -1,3 +1,4 @@
+import config from 'config';
 import { Server } from 'http';
 import app from './app';
 import logger from './config/logger';
@@ -10,7 +11,7 @@ process.on('uncaughtException', (err) => {
 
 let server: Server;
 const startServer = () => {
-  const PORT = process.env.PORT || 5500;
+  const PORT: number = config.get('server.port') ?? 5500;
 
   try {
     server = app.listen(PORT, () =>
