@@ -2,7 +2,7 @@ import config from 'config';
 import { Server } from 'http';
 import app from './app';
 import logger from './config/logger';
-import { initDB } from './config/db';
+import { initDB } from './config';
 
 process.on('uncaughtException', (err) => {
   logger.info('UNCAUGHT EXCEPTION! 💥 Shutting down...');

@@ -1,8 +1,10 @@
+import cors from 'cors';
 import express, { NextFunction, Request, Response } from 'express';
 import { HttpError } from 'http-errors';
+import healthRouter from './common/health.router';
 import logger from './config/logger';
-import { healthRouter } from './routes';
-import cors from 'cors';
+import { categoryRouter } from './features/category';
+import cookieParser from 'cookie-parser';
 
 const app = express();
 
@@ -13,9 +15,11 @@ app.use(
   })
 );
 
+app.use(cookieParser());
 app.use(express.json());
 
 app.use('/api', healthRouter);
+app.use('/api/categories', categoryRouter);
 
 app.use((err: HttpError, req: Request, res: Response, next: NextFunction) => {
   logger.error(err.message, {
