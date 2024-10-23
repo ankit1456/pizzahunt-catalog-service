@@ -1,9 +1,11 @@
 import { Router } from 'express';
+import { authenticate, canAccess } from '../../common/middlewares';
+import { ERoles } from '../../common/types';
+import { catchAsync } from '../../common/utils';
 import { logger } from '../../config';
 import CategoryController from './category.controller';
 import CategoryService from './category.service';
 import categoryValidator from './category.validator';
-// import authenticate from '../../common/middlewares/authenticate';
 
 const router = Router();
 
@@ -12,9 +14,10 @@ const categoryController = new CategoryController(categoryService, logger);
 
 router.post(
   '/',
-  // authenticate,
+  authenticate,
+  canAccess(ERoles.ADMIN, ERoles.MANAGER),
   categoryValidator,
-  categoryController.create
+  catchAsync(categoryController.createCategory)
 );
 
 export default router;

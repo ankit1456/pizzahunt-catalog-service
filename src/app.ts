@@ -1,16 +1,17 @@
-import cors from 'cors';
-import express, { NextFunction, Request, Response } from 'express';
-import { HttpError } from 'http-errors';
-import healthRouter from './common/health.router';
-import logger from './config/logger';
-import { categoryRouter } from './features/category';
+import config from 'config';
 import cookieParser from 'cookie-parser';
+import cors from 'cors';
+import express from 'express';
+import healthRouter from './common/health.router';
+import { globalErrorHandler } from './common/middlewares';
+import { NotFoundError } from './common/utils/errors';
+import { categoryRouter } from './features/category';
 
 const app = express();
 
 app.use(
   cors({
-    origin: ['http://localhost:5173'],
+    origin: [config.get('frontend.whitelistOrigin')],
     credentials: true
   })
 );
@@ -21,22 +22,10 @@ app.use(express.json());
 app.use('/api', healthRouter);
 app.use('/api/categories', categoryRouter);
 
-app.use((err: HttpError, req: Request, res: Response, next: NextFunction) => {
-  logger.error(err.message, {
-    errorName: err.name
-  });
-  const statusCode = err.statusCode || 500;
+app.all('*', (req, res, next) =>
+  next(new NotFoundError(`Can't find ${req.url} on the server`))
+);
 
-  res.status(statusCode).json({
-    errors: [
-      {
-        type: err.name,
-        message: err.message,
-        path: '',
-        location: ''
-      }
-    ]
-  });
-});
+app.use(globalErrorHandler);
 
 export default app;

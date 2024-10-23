@@ -1,11 +1,18 @@
 import mongoose from 'mongoose';
-import { IPriceConfiguration, IAttribute, ICategory } from './category.types';
+import {
+  IPriceConfiguration,
+  IAttribute,
+  ICategory,
+  EWIDGET_TYPE,
+  EPRICE_TYPE,
+  EATTRIBUTE_NAME
+} from './category.types';
 
 const priceConfigurationSchema = new mongoose.Schema<IPriceConfiguration>(
   {
     priceType: {
       type: String,
-      enum: ['base', 'additional'],
+      enum: EPRICE_TYPE,
       required: true
     },
     availableOptions: {
@@ -18,13 +25,14 @@ const priceConfigurationSchema = new mongoose.Schema<IPriceConfiguration>(
 
 const attributeSchema = new mongoose.Schema<IAttribute>(
   {
-    name: {
+    attributeName: {
       type: String,
+      enum: EATTRIBUTE_NAME,
       required: true
     },
     widgetType: {
       type: String,
-      enum: ['switch', 'radio'],
+      enum: EWIDGET_TYPE,
       required: true
     },
     defaultValue: {
@@ -39,20 +47,25 @@ const attributeSchema = new mongoose.Schema<IAttribute>(
   { _id: false }
 );
 
-const categorySchema = new mongoose.Schema<ICategory>({
-  name: {
-    type: String,
-    required: true
+const categorySchema = new mongoose.Schema<ICategory>(
+  {
+    categoryName: {
+      type: String,
+      required: true
+    },
+    priceConfiguration: {
+      type: Map,
+      of: priceConfigurationSchema,
+      required: true
+    },
+    attributes: {
+      type: [attributeSchema],
+      required: true
+    }
   },
-  priceConfiguration: {
-    type: Map,
-    of: priceConfigurationSchema,
-    required: true
-  },
-  attributes: {
-    type: [attributeSchema],
-    required: true
+  {
+    timestamps: true
   }
-});
+);
 
 export default mongoose.model('Category', categorySchema);

@@ -1,27 +1,38 @@
-import { Request } from 'express';
+import { IGenericBodyRequest } from '../../common/types';
 
 export interface ICategory {
-  name: string;
+  categoryName: string;
   priceConfiguration: IPriceConfiguration;
   attributes: Array<IAttribute>;
 }
 
 export interface IPriceConfiguration {
   [key: string]: {
-    priceType: TPriceType;
+    priceType: EPRICE_TYPE;
     availableOptions: Array<string>;
   };
 }
 
 export interface IAttribute {
-  name: string;
-  widgetType: 'switch' | 'radio';
+  attributeName: string;
+  widgetType: EWIDGET_TYPE;
   defaultValue: string;
   availableOptions: Array<string>;
 }
 
-export interface ICreateCategoryRequest extends Request {
-  body: ICategory;
+export interface ICreateCategoryRequest
+  extends IGenericBodyRequest<ICategory> {}
+
+export enum EWIDGET_TYPE {
+  SWITCH = 'switch',
+  RADIO = 'radio'
+}
+export enum EPRICE_TYPE {
+  BASE = 'base',
+  ADDITIONAL = 'additional'
 }
 
-export type TPriceType = 'base' | 'additional';
+export enum EATTRIBUTE_NAME {
+  IS_POPULAR = 'isPopular',
+  SPICINESS = 'Spiciness'
+}
