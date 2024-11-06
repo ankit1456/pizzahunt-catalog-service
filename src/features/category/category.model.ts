@@ -1,14 +1,13 @@
-import mongoose from 'mongoose';
 import {
-  IPriceConfiguration,
-  IAttribute,
-  ICategory,
-  EWIDGET_TYPE,
+  EATTRIBUTE_NAME,
   EPRICE_TYPE,
-  EATTRIBUTE_NAME
-} from './category.types';
+  EWIDGET_TYPE,
+  IAttribute,
+  ICategory
+} from '@features/category';
+import mongoose from 'mongoose';
 
-const priceConfigurationSchema = new mongoose.Schema<IPriceConfiguration>(
+const priceConfigurationSchema = new mongoose.Schema(
   {
     priceType: {
       type: String,

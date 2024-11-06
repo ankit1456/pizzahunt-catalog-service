@@ -1,16 +1,16 @@
+import {
+  ForbiddenError,
+  UnAuthorizedError,
+  ValidationError
+} from '@common/errors';
+import { EStatus } from '@common/types';
+import { logger } from '@config';
 import { NextFunction, Request, Response } from 'express';
 import { UnauthorizedError as UnauthorizedErrorExpressJwt } from 'express-jwt';
 import { ValidationError as TExpressValidationError } from 'express-validator';
 import { HttpError } from 'http-errors';
 import { MongoServerError } from 'mongodb';
 import { v4 as uuid } from 'uuid';
-import { logger } from '../../config';
-import { EStatus } from '../types';
-import {
-  ForbiddenError,
-  UnAuthorizedError,
-  ValidationError
-} from '../utils/errors';
 
 type ErrorResponse = {
   ref: string;
@@ -57,6 +57,7 @@ export default function errorHandler(
       response.message = 'You are not logged in. Please log in and try again';
     }
   } else if (err instanceof ValidationError) {
+    statusCode = err.statusCode;
     response.errors = err.errors;
   } else if (err instanceof ForbiddenError) {
     response.message = err.message;
@@ -71,16 +72,13 @@ export default function errorHandler(
         response.field = field;
       }
     }
+  } else if (err instanceof HttpError) {
+    statusCode = err.statusCode;
   } else {
     response.message = 'Something went wrong. Please try again later';
     response.status = EStatus.ERROR;
+    response.statusCode = statusCode;
   }
-
-  if (err instanceof HttpError) {
-    statusCode = err.statusCode;
-  }
-
-  response.statusCode = statusCode;
 
   logger.error(err.message, {
     id: errorId,

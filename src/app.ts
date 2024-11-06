@@ -1,11 +1,11 @@
+import { NotFoundError } from '@common/errors';
+import healthRouter from '@common/health.router';
+import { globalErrorHandler } from '@common/middlewares';
+import { categoryRouter } from '@features/category';
 import config from 'config';
 import cookieParser from 'cookie-parser';
 import cors from 'cors';
 import express from 'express';
-import healthRouter from './common/health.router';
-import { globalErrorHandler } from './common/middlewares';
-import { NotFoundError } from './common/utils/errors';
-import { categoryRouter } from './features/category';
 
 const app = express();
 

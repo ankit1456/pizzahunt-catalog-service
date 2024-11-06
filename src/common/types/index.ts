@@ -18,6 +18,12 @@ export interface IAuthRequest extends Request {
   auth: IRequestAuthPayload;
 }
 
+export interface IQueryParams {
+  page: number;
+  limit: number;
+  q?: string;
+}
+
 export const enum EStatus {
   SUCCESS = 'success',
   FAIL = 'fail',

@@ -1,8 +1,8 @@
+import { IAuthCookie } from '@common/types';
 import config from 'config';
 import { Request } from 'express';
 import { GetVerificationKey, expressjwt } from 'express-jwt';
 import JwksClient from 'jwks-rsa';
-import { IAuthCookie } from '../types';
 
 export default expressjwt({
   secret: JwksClient.expressJwtSecret({

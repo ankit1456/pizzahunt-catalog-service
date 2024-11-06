@@ -1,17 +1,18 @@
-import { IGenericBodyRequest } from '../../common/types';
+import { IGenericBodyRequest } from '@common/types';
 
 export interface ICategory {
   categoryName: string;
-  priceConfiguration: IPriceConfiguration;
+  priceConfiguration: TPriceConfiguration;
   attributes: Array<IAttribute>;
 }
 
-export interface IPriceConfiguration {
-  [key: string]: {
+export type TPriceConfiguration = Map<
+  string,
+  {
     priceType: EPRICE_TYPE;
     availableOptions: Array<string>;
-  };
-}
+  }
+>;
 
 export interface IAttribute {
   attributeName: string;
@@ -22,6 +23,15 @@ export interface IAttribute {
 
 export interface ICreateCategoryRequest
   extends IGenericBodyRequest<ICategory> {}
+export interface IUpdateCategoryRequest
+  extends IGenericBodyRequest<
+    ICategory & {
+      removePriceConfigurationOrAttribute?: {
+        priceConfiguration?: Array<string>;
+        attributeNames?: Array<string>;
+      };
+    }
+  > {}
 
 export enum EWIDGET_TYPE {
   SWITCH = 'switch',
