@@ -33,7 +33,6 @@ export default function errorHandler(
   next: NextFunction
 ) {
   const isProduction = process.env.NODE_ENV === 'production';
-
   const errorId = uuid();
   let statusCode = 500;
 
@@ -89,7 +88,7 @@ export default function errorHandler(
     method: req.method
   });
 
-  return res.status(statusCode).json(response);
+  res.status(statusCode).json(response);
 }
 
 function getDuplicateFieldAndValue(err: MongoServerError) {

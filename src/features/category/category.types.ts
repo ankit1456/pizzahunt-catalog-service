@@ -1,18 +1,19 @@
-import { IGenericBodyRequest } from '@common/types';
+import { EPRICE_TYPE, EWIDGET_TYPE, IGenericBodyRequest } from '@common/types';
 
 export interface ICategory {
   categoryName: string;
-  priceConfiguration: TPriceConfiguration;
+  priceConfiguration: IPriceConfiguration;
   attributes: Array<IAttribute>;
 }
 
-export type TPriceConfiguration = Map<
-  string,
-  {
-    priceType: EPRICE_TYPE;
-    availableOptions: Array<string>;
-  }
->;
+export interface IPriceConfiguration
+  extends Map<
+    string,
+    {
+      priceType: EPRICE_TYPE;
+      availableOptions: Array<string>;
+    }
+  > {}
 
 export interface IAttribute {
   attributeName: string;
@@ -32,17 +33,3 @@ export interface IUpdateCategoryRequest
       };
     }
   > {}
-
-export enum EWIDGET_TYPE {
-  SWITCH = 'switch',
-  RADIO = 'radio'
-}
-export enum EPRICE_TYPE {
-  BASE = 'base',
-  ADDITIONAL = 'additional'
-}
-
-export enum EATTRIBUTE_NAME {
-  IS_POPULAR = 'isPopular',
-  SPICINESS = 'Spiciness'
-}

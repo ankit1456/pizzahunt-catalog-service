@@ -1,7 +1,6 @@
+import { EATTRIBUTE_NAME, EPRICE_TYPE, EWIDGET_TYPE } from '@common/types';
+import { formatEnumMessage } from '@common/utils';
 import {
-  EATTRIBUTE_NAME,
-  EPRICE_TYPE,
-  EWIDGET_TYPE,
   IAttribute,
   ICreateCategoryRequest
 } from '@features/category/category.types';
@@ -34,10 +33,12 @@ export const createCategoryValidator = [
     .bail()
     .custom((value: EPRICE_TYPE) => isInEnum('price type', value, EPRICE_TYPE)),
 
-  body('priceConfiguration.*.availableOptions').custom((options, { path }) => {
-    const key = extractKeyFromPath(path);
-    return validateAvailableOptions(options, key);
-  }),
+  body('priceConfiguration.*.availableOptions')
+    .custom((options, { path }) => {
+      const key = extractKeyFromPath(path);
+      return validateAvailableOptions(options, key);
+    })
+    .customSanitizer((options: string[]) => options.filter((o) => !!o)),
 
   body('attributes')
     .exists({ checkFalsy: true })
@@ -78,7 +79,8 @@ export const createCategoryValidator = [
     .custom((options, { req, path }) => {
       const attribute = getAttributeByPath(req as ICreateCategoryRequest, path);
       return validateAvailableOptions(options, attribute?.attributeName);
-    }),
+    })
+    .customSanitizer((options: string[]) => options.filter((o) => !!o)),
 
   body('attributes.*.defaultValue').custom(
     (value: string | undefined, { req, path }) =>
@@ -113,10 +115,12 @@ export const updateCategoryValidator = [
     .bail()
     .custom((value: EPRICE_TYPE) => isInEnum('price type', value, EPRICE_TYPE)),
 
-  body('priceConfiguration.*.availableOptions').custom((options, { path }) => {
-    const key = extractKeyFromPath(path);
-    return validateAvailableOptions(options, key);
-  }),
+  body('priceConfiguration.*.availableOptions')
+    .custom((options, { path }) => {
+      const key = extractKeyFromPath(path);
+      return validateAvailableOptions(options, key);
+    })
+    .customSanitizer((options: string[]) => options.filter((o) => !!o)),
 
   body('attributes')
     .optional()
@@ -152,7 +156,8 @@ export const updateCategoryValidator = [
     .custom((options, { req, path }) => {
       const attribute = getAttributeByPath(req as ICreateCategoryRequest, path);
       return validateAvailableOptions(options, attribute?.attributeName);
-    }),
+    })
+    .customSanitizer((options: string[]) => options.filter((o) => !!o)),
 
   body('attributes.*.defaultValue').custom(
     (value: string | undefined, { req, path }) =>
@@ -189,7 +194,9 @@ const isInEnum = <E extends Record<string, string>, V extends E[keyof E]>(
   ENUM: E
 ) => {
   if (!Object.values(ENUM).includes(value)) {
-    throw new Error(`${fieldName} must be ${Object.values(ENUM).join(' or ')}`);
+    throw new Error(
+      `${fieldName} must be ${formatEnumMessage(Object.values(ENUM))}`
+    );
   }
   return true;
 };

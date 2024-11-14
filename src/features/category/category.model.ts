@@ -1,10 +1,5 @@
-import {
-  EATTRIBUTE_NAME,
-  EPRICE_TYPE,
-  EWIDGET_TYPE,
-  IAttribute,
-  ICategory
-} from '@features/category';
+import { EATTRIBUTE_NAME, EPRICE_TYPE, EWIDGET_TYPE } from '@common/types';
+import { IAttribute, ICategory } from '@features/category';
 import mongoose from 'mongoose';
 
 const priceConfigurationSchema = new mongoose.Schema(

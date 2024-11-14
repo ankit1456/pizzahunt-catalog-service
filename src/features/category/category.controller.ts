@@ -4,7 +4,7 @@ import { CategoryService, ICreateCategoryRequest } from '@features/category';
 import {
   IAttribute,
   IUpdateCategoryRequest,
-  TPriceConfiguration
+  IPriceConfiguration
 } from '@features/category/category.types';
 import { NextFunction, Request, Response } from 'express';
 import { matchedData } from 'express-validator';
@@ -137,8 +137,8 @@ export default class CategoryController {
 
   private serializePriceConfiguration(
     keysToRemove: string[] | undefined,
-    existingPriceConfiguration: TPriceConfiguration,
-    newPriceConfiguration: TPriceConfiguration
+    existingPriceConfiguration: IPriceConfiguration,
+    newPriceConfiguration: IPriceConfiguration
   ) {
     const priceConfigMap = new Map(existingPriceConfiguration);
 

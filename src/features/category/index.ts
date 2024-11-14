@@ -7,12 +7,4 @@ export {
   updateCategoryValidator
 } from './category.validator';
 
-export {
-  EATTRIBUTE_NAME,
-  EPRICE_TYPE,
-  EWIDGET_TYPE,
-  IAttribute,
-  ICategory,
-  ICreateCategoryRequest,
-  TPriceConfiguration
-} from './category.types';
+export * from './category.types';
