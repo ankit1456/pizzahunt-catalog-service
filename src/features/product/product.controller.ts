@@ -1,9 +1,17 @@
-import { EStatus, IFileStorage } from '@common/types';
-import { ICreateProductRequest, ProductService } from '@features/product';
-import { v4 as uuid } from 'uuid';
-import { Response } from 'express';
-import { Logger } from 'winston';
+import { ERoles, EStatus } from '@common/constants';
+import { ForbiddenError, NotFoundError } from '@common/errors';
+import { IFileStorage } from '@common/types';
+import {
+  IAttribute,
+  ICreateProductRequest,
+  IPriceConfiguration,
+  IUpdateProductRequest,
+  ProductService
+} from '@features/product';
+import { NextFunction, Request, Response } from 'express';
 import { UploadedFile } from 'express-fileupload';
+import { v4 as uuid } from 'uuid';
+import { Logger } from 'winston';
 
 export default class ProductController {
   constructor(
@@ -12,6 +20,7 @@ export default class ProductController {
     private readonly logger: Logger
   ) {
     this.createProduct = this.createProduct.bind(this);
+    this.updateProduct = this.updateProduct.bind(this);
     // this.getCategories = this.getCategories.bind(this);
     // this.getCategory = this.getCategory.bind(this);
     // this.deleteCategory = this.deleteCategory.bind(this);
@@ -101,84 +110,96 @@ export default class ProductController {
   //   res.json({ status: EStatus.SUCCESS });
   // }
 
-  // async updateCategory(
-  //   req: IUpdateCategoryRequest,
-  //   res: Response,
-  //   next: NextFunction
-  // ) {
-  //   const { categoryId } = req.params;
+  async updateProduct(_req: Request, res: Response, next: NextFunction) {
+    const req = _req as IUpdateProductRequest;
+    const { productId } = req.params;
 
-  //   this.logger.info('Updating category', {
-  //     id: categoryId
-  //   });
+    this.logger.info('Updating product', {
+      id: productId
+    });
 
-  //   const category = await this.categoryService.getOne(categoryId);
+    const product = await this.productService.getOne(productId);
+    if (!product) return next(new NotFoundError('Product not found'));
 
-  //   if (!category) return next(new NotFoundError('Category not found'));
+    const { role, tenantId } = req.auth;
 
-  //   const { removePriceConfigurationOrAttribute } = req.body;
+    if (product.tenantId !== tenantId && role !== ERoles.ADMIN)
+      return next(
+        new ForbiddenError('You are not authorized to update this product')
+      );
 
-  //   const serializedPriceConfiguration = this.serializePriceConfiguration(
-  //     removePriceConfigurationOrAttribute?.priceConfiguration,
-  //     category.priceConfiguration,
-  //     req.body.priceConfiguration
-  //   );
+    let imageName: string | undefined;
+    const prevImage = product.image;
 
-  //   const serializedAttributes = this.serializeAttributes(
-  //     category.attributes,
-  //     req.body.attributes,
-  //     removePriceConfigurationOrAttribute?.attributeNames
-  //   );
+    if (req.files?.image) {
+      const image = req.files.image as UploadedFile;
+      imageName = uuid();
 
-  //   this.logger.info('Category updated', {
-  //     id: categoryId
-  //   });
+      await this.storage.upload({
+        filename: imageName,
+        fileData: image?.data.buffer
+      });
 
-  //   const updatedCategory = await this.categoryService.update(categoryId, {
-  //     categoryName: req.body.categoryName,
-  //     priceConfiguration: serializedPriceConfiguration,
-  //     attributes: serializedAttributes
-  //   });
+      await this.storage.delete(prevImage);
+    }
 
-  //   res.json({
-  //     status: EStatus.SUCCESS,
-  //     category: updatedCategory
-  //   });
-  // }
+    const serializedPriceConfiguration = this.serializePriceConfiguration(
+      req.body.removePriceConfigurationOrAttribute?.priceConfigurationKeys,
+      product.priceConfiguration,
+      req.body.priceConfiguration
+    );
 
-  // private serializePriceConfiguration(
-  //   keysToRemove: string[] | undefined,
-  //   existingPriceConfiguration: IPriceConfiguration,
-  //   newPriceConfiguration: IPriceConfiguration
-  // ) {
-  //   const priceConfigMap = new Map(existingPriceConfiguration);
+    const serializedAttributes = this.serializeAttributes(
+      req.body.removePriceConfigurationOrAttribute?.attributeNames,
+      product.attributes,
+      req.body.attributes
+    );
 
-  //   keysToRemove?.forEach((key) => priceConfigMap.delete(key));
+    const updatedProduct = await this.productService.update(productId, {
+      ...req.body,
+      priceConfiguration: serializedPriceConfiguration,
+      attributes: serializedAttributes,
+      image: imageName ?? prevImage
+    });
 
-  //   return {
-  //     ...Object.fromEntries(existingPriceConfiguration),
-  //     ...newPriceConfiguration
-  //   };
-  // }
+    this.logger.info('Product updated', {
+      id: productId
+    });
 
-  // private serializeAttributes(
-  //   existingAttributes: IAttribute[],
-  //   newAttributes?: IAttribute[],
-  //   attributeNamesToRemove?: string[] | undefined
-  // ) {
-  //   const attributesToRemove = new Set(attributeNamesToRemove);
-  //   const newAttributNames = new Set(
-  //     newAttributes?.map((attr) => attr.attributeName)
-  //   );
+    res.json({ status: EStatus.SUCCESS, product: updatedProduct });
+  }
 
-  //   const filteredAttributes = existingAttributes.filter(
-  //     (attribute) =>
-  //       !attributesToRemove.has(attribute.attributeName) &&
-  //       !newAttributNames.has(attribute.attributeName)
-  //   );
+  private serializePriceConfiguration(
+    keysToRemove: string[] | undefined,
+    existingPriceConfiguration: IPriceConfiguration,
+    newPriceConfiguration: IPriceConfiguration
+  ) {
+    keysToRemove?.forEach((key) => existingPriceConfiguration.delete(key));
 
-  //   return newAttributes?.length
-  //     ? filteredAttributes.concat(newAttributes)
-  //     : filteredAttributes;
-  // }
+    return {
+      ...Object.fromEntries(existingPriceConfiguration),
+      ...newPriceConfiguration
+    };
+  }
+
+  private serializeAttributes(
+    attributeNamesToRemove: string[] | undefined,
+    existingAttributes: IAttribute[],
+    newAttributes: IAttribute[]
+  ) {
+    const attributesToRemove = new Set(attributeNamesToRemove);
+    const newAttributeNames = new Set(
+      newAttributes?.map((attr) => attr.attributeName)
+    );
+
+    const filteredAttributes = existingAttributes.filter(
+      (attribute) =>
+        !attributesToRemove.has(attribute.attributeName) &&
+        !newAttributeNames.has(attribute.attributeName)
+    );
+
+    return newAttributes?.length
+      ? filteredAttributes.concat(newAttributes)
+      : filteredAttributes;
+  }
 }

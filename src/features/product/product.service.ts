@@ -11,28 +11,17 @@ export default class ProductService {
   //   return paginate<ICategory>(CategoryModel, queryParams);
   // }
 
-  // getOne(categoryId: string | undefined) {
-  //   return CategoryModel.findById(categoryId);
-  // }
+  getOne(productId: string | undefined) {
+    return ProductModel.findById(productId);
+  }
 
   // delete(categoryId: string | undefined) {
   //   return CategoryModel.findByIdAndDelete(categoryId);
   // }
 
-  // update(
-  //   categoryId: string | undefined,
-  //   { categoryName, priceConfiguration, attributes }: ICategory
-  // ) {
-  //   return CategoryModel.findByIdAndUpdate(
-  //     categoryId,
-  //     {
-  //       categoryName,
-  //       priceConfiguration,
-  //       attributes
-  //     },
-  //     {
-  //       new: true
-  //     }
-  //   );
-  // }
+  update(productId: string | undefined, productPayload: IProduct) {
+    return ProductModel.findByIdAndUpdate(productId, productPayload, {
+      new: true
+    });
+  }
 }

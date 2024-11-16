@@ -1,25 +1,29 @@
+import { ERoles } from '@common/constants';
+import { authenticate, canAccess, sanitizeRequest } from '@common/middlewares';
+import { idValidator } from '@common/middlewares/validators';
 import {
-  authenticate,
-  canAccess,
-  fileUploader,
-  sanitizeRequest
-} from '@common/middlewares';
-import { S3Storage } from '@common/services/S3Storage.service';
-import { ERoles } from '@common/types';
+  CloudinaryStorage
+  // S3Storage
+} from '@common/services';
 import { catchAsync } from '@common/utils';
 import { logger } from '@config';
 import ProductController from '@features/product/product.controller';
 import ProductService from '@features/product/product.service';
-import { createProductValidator } from '@features/product/product.validator';
+import {
+  createProductValidator,
+  updateProductValidator
+} from '@features/product/product.validator';
 import { Router } from 'express';
+import fileUpload from 'express-fileupload';
 
 const router = Router();
 
 const productService = new ProductService();
-const s3Storage = new S3Storage();
+// const s3Storage = new S3Storage();
+const cloudinaryStorage = new CloudinaryStorage();
 const productController = new ProductController(
   productService,
-  s3Storage,
+  cloudinaryStorage,
   logger
 );
 
@@ -29,33 +33,34 @@ router
   .post(
     authenticate,
     canAccess(ERoles.ADMIN, ERoles.MANAGER),
-    fileUploader,
+    fileUpload(),
     createProductValidator,
     sanitizeRequest,
     catchAsync(productController.createProduct)
   );
 
-// router
-//   .route('/:categoryId')
-//   .get(
-//     idValidator('categoryId'),
-//     sanitizeRequest,
-//     catchAsync(categoryController.getCategory)
-//   )
-//   .delete(
-//     authenticate,
-//     canAccess(ERoles.ADMIN),
-//     idValidator('categoryId'),
-//     sanitizeRequest,
-//     catchAsync(categoryController.deleteCategory)
-//   )
-//   .patch(
-//     authenticate,
-//     canAccess(ERoles.ADMIN),
-//     idValidator('categoryId'),
-//     updateCategoryValidator,
-//     sanitizeRequest,
-//     catchAsync(categoryController.updateCategory)
-//   );
+router
+  .route('/:productId')
+  //   .get(
+  //     idValidator('categoryId'),
+  //     sanitizeRequest,
+  //     catchAsync(categoryController.getCategory)
+  //   )
+  //   .delete(
+  //     authenticate,
+  //     canAccess(ERoles.ADMIN),
+  //     idValidator('categoryId'),
+  //     sanitizeRequest,
+  //     catchAsync(categoryController.deleteCategory)
+  //   )
+  .patch(
+    authenticate,
+    canAccess(ERoles.ADMIN, ERoles.MANAGER),
+    idValidator('productId'),
+    fileUpload(),
+    updateProductValidator,
+    sanitizeRequest,
+    catchAsync(productController.updateProduct)
+  );
 
 export default router;

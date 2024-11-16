@@ -1,5 +1,6 @@
+import { ERoles } from '@common/constants';
 import { ForbiddenError } from '@common/errors';
-import { ERoles, IAuthRequest } from '@common/types';
+import { IAuthRequest } from '@common/types';
 import { NextFunction, RequestHandler, Response } from 'express';
 import { Request } from 'express-jwt';
 

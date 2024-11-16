@@ -1,4 +1,4 @@
-import { EATTRIBUTE_NAME, EPRICE_TYPE, EWIDGET_TYPE } from '@common/types';
+import { EATTRIBUTE_NAME, EPRICE_TYPE, EWIDGET_TYPE } from '@common/constants';
 import { IAttribute, ICategory } from '@features/category';
 import mongoose from 'mongoose';
 

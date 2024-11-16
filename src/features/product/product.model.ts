@@ -1,6 +1,6 @@
 import mongoose from 'mongoose';
 import { IAttribute, IProduct } from '@features/product';
-import { EATTRIBUTE_NAME, EPRICE_TYPE } from '@common/types';
+import { EATTRIBUTE_NAME, EPRICE_TYPE } from '@common/constants';
 
 const priceConfigurationSchema = new mongoose.Schema(
   {

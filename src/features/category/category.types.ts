@@ -1,4 +1,5 @@
-import { EPRICE_TYPE, EWIDGET_TYPE, IGenericBodyRequest } from '@common/types';
+import { EPRICE_TYPE, EWIDGET_TYPE } from '@common/constants';
+import { IGenericBodyRequest } from '@common/types';
 
 export interface ICategory {
   categoryName: string;
@@ -28,7 +29,7 @@ export interface IUpdateCategoryRequest
   extends IGenericBodyRequest<
     ICategory & {
       removePriceConfigurationOrAttribute?: {
-        priceConfiguration?: Array<string>;
+        priceConfigurationKeys?: Array<string>;
         attributeNames?: Array<string>;
       };
     }

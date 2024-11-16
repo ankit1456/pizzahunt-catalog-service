@@ -1,4 +1,4 @@
-import { EATTRIBUTE_NAME, EPRICE_TYPE, EWIDGET_TYPE } from '@common/types';
+import { EATTRIBUTE_NAME, EPRICE_TYPE, EWIDGET_TYPE } from '@common/constants';
 import { formatEnumMessage } from '@common/utils';
 import {
   IAttribute,
@@ -94,13 +94,13 @@ export const createCategoryValidator = [
 export const updateCategoryValidator = [
   body('categoryName')
     .optional()
+    .trim()
     .custom((value) => {
-      if (String(value).trim() && !isNaN(value as number))
+      if (!value || !isNaN(value))
         throw new Error('please provide a valid category name');
       return true;
     })
     .bail()
-    .trim()
     .isLength({ min: 3 })
     .withMessage('category name is too short'),
 
@@ -167,7 +167,7 @@ export const updateCategoryValidator = [
       })
   ),
 
-  body('removePriceConfigurationOrAttribute.priceConfiguration')
+  body('removePriceConfigurationOrAttribute.priceConfigurationKeys')
     .optional()
     .isArray()
     .withMessage('please provide a list price configuration keys to be deleted')

@@ -1,10 +1,11 @@
+import { EStatus } from '@common/constants';
 import { NotFoundError } from '@common/errors';
-import { EStatus, IQueryParams } from '@common/types';
+import { IQueryParams } from '@common/types';
 import { CategoryService, ICreateCategoryRequest } from '@features/category';
 import {
   IAttribute,
-  IUpdateCategoryRequest,
-  IPriceConfiguration
+  IPriceConfiguration,
+  IUpdateCategoryRequest
 } from '@features/category/category.types';
 import { NextFunction, Request, Response } from 'express';
 import { matchedData } from 'express-validator';
@@ -108,7 +109,7 @@ export default class CategoryController {
     const { removePriceConfigurationOrAttribute } = req.body;
 
     const serializedPriceConfiguration = this.serializePriceConfiguration(
-      removePriceConfigurationOrAttribute?.priceConfiguration,
+      removePriceConfigurationOrAttribute?.priceConfigurationKeys,
       category.priceConfiguration,
       req.body.priceConfiguration
     );
@@ -140,9 +141,7 @@ export default class CategoryController {
     existingPriceConfiguration: IPriceConfiguration,
     newPriceConfiguration: IPriceConfiguration
   ) {
-    const priceConfigMap = new Map(existingPriceConfiguration);
-
-    keysToRemove?.forEach((key) => priceConfigMap.delete(key));
+    keysToRemove?.forEach((key) => existingPriceConfiguration.delete(key));
 
     return {
       ...Object.fromEntries(existingPriceConfiguration),

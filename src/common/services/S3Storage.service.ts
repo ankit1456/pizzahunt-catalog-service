@@ -1,8 +1,12 @@
-import { PutObjectCommand, S3Client } from '@aws-sdk/client-s3';
+import {
+  DeleteObjectCommand,
+  PutObjectCommand,
+  S3Client
+} from '@aws-sdk/client-s3';
 import { IFileData, IFileStorage } from '@common/types';
 import config from 'config';
 
-export class S3Storage implements IFileStorage {
+export default class S3Storage implements IFileStorage {
   private client: S3Client;
 
   constructor() {
@@ -23,9 +27,15 @@ export class S3Storage implements IFileStorage {
 
     await this.client.send(new PutObjectCommand(objectParams));
   }
-  delete(): void {
-    throw new Error('Method not implemented.');
+  async delete(filename: string | undefined): Promise<void> {
+    const objectParams = {
+      Bucket: config.get('s3.bucket') as string,
+      Key: filename
+    };
+
+    await this.client.send(new DeleteObjectCommand(objectParams));
   }
+
   getObjectURI(): string {
     throw new Error('Method not implemented.');
   }

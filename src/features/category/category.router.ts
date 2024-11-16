@@ -3,7 +3,7 @@ import {
   idValidator,
   queryParamsValidator
 } from '@common/middlewares/validators';
-import { ERoles } from '@common/types';
+import { ERoles } from '@common/constants';
 import { catchAsync } from '@common/utils';
 import { logger } from '@config';
 import CategoryController from '@features/category/category.controller';

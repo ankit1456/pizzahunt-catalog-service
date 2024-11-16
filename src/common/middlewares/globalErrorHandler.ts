@@ -1,9 +1,9 @@
+import { EStatus } from '@common/constants';
 import {
   ForbiddenError,
   UnAuthorizedError,
   ValidationError
 } from '@common/errors';
-import { EStatus } from '@common/types';
 import { logger } from '@config';
 import { NextFunction, Request, Response } from 'express';
 import { UnauthorizedError as UnauthorizedErrorExpressJwt } from 'express-jwt';

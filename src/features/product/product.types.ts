@@ -1,4 +1,5 @@
-import { EPRICE_TYPE, IGenericBodyRequest } from '@common/types';
+import { EPRICE_TYPE, ERoles } from '@common/constants';
+import { IGenericBodyRequest } from '@common/types';
 import mongoose from 'mongoose';
 
 export interface IPriceConfiguration
@@ -26,14 +27,22 @@ export interface IProduct {
   isPublished: boolean;
 }
 
-export interface ICreateProductRequest extends IGenericBodyRequest<IProduct> {}
+interface IRequestAuthPayload {
+  sub: string;
+  role: ERoles;
+  id?: string;
+  tenantId?: string;
+}
 
-// export interface IUpdateCategoryRequest
-//   extends IGenericBodyRequest<
-//     ICategory & {
-//       removePriceConfigurationOrAttribute?: {
-//         priceConfiguration?: Array<string>;
-//         attributeNames?: Array<string>;
-//       };
-//     }
-//   > {}
+export interface ICreateProductRequest extends IGenericBodyRequest<IProduct> {}
+export interface IUpdateProductRequest
+  extends IGenericBodyRequest<
+    IProduct & {
+      removePriceConfigurationOrAttribute?: {
+        priceConfigurationKeys?: Array<string>;
+        attributeNames?: Array<string>;
+      };
+    }
+  > {
+  auth: IRequestAuthPayload;
+}
