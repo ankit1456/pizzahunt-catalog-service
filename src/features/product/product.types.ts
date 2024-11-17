@@ -1,5 +1,5 @@
 import { EPRICE_TYPE, ERoles } from '@common/constants';
-import { IGenericBodyRequest } from '@common/types';
+import { IGenericBodyRequest, IQueryParams } from '@common/types';
 import mongoose from 'mongoose';
 
 export interface IPriceConfiguration
@@ -23,7 +23,7 @@ export interface IProduct {
   priceConfiguration: IPriceConfiguration;
   attributes: Array<IAttribute>;
   tenantId: string;
-  categoryId: mongoose.Schema.Types.ObjectId;
+  categoryId: mongoose.Types.ObjectId;
   isPublished: boolean;
 }
 
@@ -45,4 +45,16 @@ export interface IUpdateProductRequest
     }
   > {
   auth: IRequestAuthPayload;
+}
+
+export interface IProductQueryParams extends IQueryParams {
+  tenantId: string;
+  categoryId: string;
+  isPublished: boolean;
+}
+
+export interface IFilters {
+  tenantId?: string;
+  categoryId?: mongoose.Types.ObjectId;
+  isPublished?: boolean;
 }

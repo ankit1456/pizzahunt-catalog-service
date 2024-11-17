@@ -1,4 +1,7 @@
-import { IProduct, ProductModel } from '@features/product';
+import { IQueryParams } from '@common/types';
+import { paginationLabels } from '@config';
+import ProductModel from '@features/product/product.model';
+import { IFilters, IProduct } from '@features/product/product.types';
 
 export default class ProductService {
   create(product: IProduct) {
@@ -7,9 +10,50 @@ export default class ProductService {
     return newProduct.save();
   }
 
-  // getAll(queryParams: IQueryParams) {
-  //   return paginate<ICategory>(CategoryModel, queryParams);
-  // }
+  getAll({ page, limit, q }: IQueryParams, filters: IFilters) {
+    const searchQueryRegExp = new RegExp(q, 'i');
+
+    const matchQuery = {
+      ...filters,
+      $or: [
+        { productName: searchQueryRegExp },
+        { description: searchQueryRegExp }
+      ]
+    };
+
+    const aggregate = ProductModel.aggregate<IProduct>([
+      {
+        $match: matchQuery
+      },
+      {
+        $lookup: {
+          from: 'categories',
+          localField: 'categoryId',
+          foreignField: '_id',
+          as: 'category',
+          pipeline: [
+            {
+              $project: {
+                _id: 1,
+                categoryName: 1,
+                priceConfiguration: 1,
+                attributes: 1
+              }
+            }
+          ]
+        }
+      },
+      {
+        $unwind: '$category'
+      }
+    ]);
+
+    return ProductModel.aggregatePaginate(aggregate, {
+      page,
+      limit,
+      customLabels: paginationLabels
+    });
+  }
 
   getOne(productId: string | undefined) {
     return ProductModel.findById(productId);
@@ -25,3 +69,5 @@ export default class ProductService {
     });
   }
 }
+
+// make categoryName unique

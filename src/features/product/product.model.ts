@@ -1,6 +1,7 @@
-import mongoose from 'mongoose';
-import { IAttribute, IProduct } from '@features/product';
 import { EATTRIBUTE_NAME, EPRICE_TYPE } from '@common/constants';
+import { IAttribute, IProduct } from '@features/product';
+import mongoose, { AggregatePaginateModel } from 'mongoose';
+import aggregatePaginate from 'mongoose-aggregate-paginate-v2';
 
 const priceConfigurationSchema = new mongoose.Schema(
   {
@@ -68,4 +69,9 @@ const productSchema = new mongoose.Schema<IProduct>(
   }
 );
 
-export default mongoose.model('Product', productSchema);
+productSchema.plugin(aggregatePaginate);
+
+export default mongoose.model<IProduct, AggregatePaginateModel<IProduct>>(
+  'Product',
+  productSchema
+);

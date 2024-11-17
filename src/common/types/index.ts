@@ -21,7 +21,7 @@ export interface IAuthRequest extends Request {
 export interface IQueryParams {
   page: number;
   limit: number;
-  q?: string;
+  q: string;
 }
 
 export * from './storage';

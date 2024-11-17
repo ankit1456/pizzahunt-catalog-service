@@ -1,6 +1,7 @@
 import { EATTRIBUTE_NAME, EPRICE_TYPE, EWIDGET_TYPE } from '@common/constants';
 import { IAttribute, ICategory } from '@features/category';
-import mongoose from 'mongoose';
+import mongoose, { PaginateModel } from 'mongoose';
+import mongoosePaginate from 'mongoose-paginate-v2';
 
 const priceConfigurationSchema = new mongoose.Schema(
   {
@@ -62,4 +63,9 @@ const categorySchema = new mongoose.Schema<ICategory>(
   }
 );
 
-export default mongoose.model('Category', categorySchema);
+categorySchema.plugin(mongoosePaginate);
+
+export default mongoose.model<ICategory, PaginateModel<ICategory>>(
+  'Category',
+  categorySchema
+);

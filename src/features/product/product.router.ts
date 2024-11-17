@@ -1,6 +1,9 @@
 import { ERoles } from '@common/constants';
 import { authenticate, canAccess, sanitizeRequest } from '@common/middlewares';
-import { idValidator } from '@common/middlewares/validators';
+import {
+  idValidator,
+  queryParamsValidator
+} from '@common/middlewares/validators';
 import {
   CloudinaryStorage
   // S3Storage
@@ -29,7 +32,7 @@ const productController = new ProductController(
 
 router
   .route('/')
-  // .get(queryParamsValidator, catchAsync(categoryController.getCategories))
+  .get(queryParamsValidator, catchAsync(productController.getProducts))
   .post(
     authenticate,
     canAccess(ERoles.ADMIN, ERoles.MANAGER),

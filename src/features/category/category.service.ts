@@ -1,5 +1,5 @@
 import { IQueryParams } from '@common/types';
-import { paginate } from '@common/utils';
+import { paginationLabels } from '@config';
 import { CategoryModel, ICategory } from '@features/category';
 
 export default class CategoryService {
@@ -9,8 +9,15 @@ export default class CategoryService {
     return newCategory.save();
   }
 
-  getAll(queryParams: IQueryParams) {
-    return paginate<ICategory>(CategoryModel, queryParams);
+  getAll({ page, limit }: IQueryParams) {
+    return CategoryModel.paginate(
+      {},
+      {
+        page,
+        limit,
+        customLabels: paginationLabels
+      }
+    );
   }
 
   getOne(categoryId: string | undefined) {

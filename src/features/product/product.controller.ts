@@ -4,12 +4,16 @@ import { IFileStorage } from '@common/types';
 import {
   IAttribute,
   ICreateProductRequest,
+  IFilters,
   IPriceConfiguration,
+  IProductQueryParams,
   IUpdateProductRequest,
   ProductService
 } from '@features/product';
 import { NextFunction, Request, Response } from 'express';
 import { UploadedFile } from 'express-fileupload';
+import { matchedData } from 'express-validator';
+import mongoose from 'mongoose';
 import { v4 as uuid } from 'uuid';
 import { Logger } from 'winston';
 
@@ -21,26 +25,38 @@ export default class ProductController {
   ) {
     this.createProduct = this.createProduct.bind(this);
     this.updateProduct = this.updateProduct.bind(this);
-    // this.getCategories = this.getCategories.bind(this);
+    this.getProducts = this.getProducts.bind(this);
     // this.getCategory = this.getCategory.bind(this);
     // this.deleteCategory = this.deleteCategory.bind(this);
     // this.updateCategory = this.updateCategory.bind(this);
   }
 
-  // async getCategories(req: Request, res: Response) {
-  //   const queryParams = matchedData<IQueryParams>(req, {
-  //     onlyValidData: true
-  //   });
+  async getProducts(req: Request, res: Response) {
+    const queryParams = matchedData<IProductQueryParams>(req, {
+      onlyValidData: true
+    });
 
-  //   const categories = await this.categoryService.getAll(queryParams);
+    const { limit, page, q, isPublished, tenantId, categoryId } = queryParams;
 
-  //   this.logger.info('All categories fetched', queryParams);
+    const filters: IFilters = {};
 
-  //   res.json({
-  //     status: EStatus.SUCCESS,
-  //     ...categories
-  //   });
-  // }
+    if (isPublished) filters.isPublished = true;
+    if (tenantId) filters.tenantId = tenantId;
+    if (categoryId && mongoose.Types.ObjectId.isValid(categoryId))
+      filters.categoryId = new mongoose.Types.ObjectId(categoryId);
+
+    const result = await this.productService.getAll(
+      { page, limit, q },
+      filters
+    );
+
+    this.logger.info('All products fetched', queryParams);
+
+    return res.json({
+      status: EStatus.SUCCESS,
+      ...result
+    });
+  }
 
   // async getCategory(req: Request, res: Response, next: NextFunction) {
   //   const { categoryId } = req.params;
@@ -89,7 +105,7 @@ export default class ProductController {
     });
 
     this.logger.info('Product has been created', { id: product._id });
-    res.status(201).json({ status: EStatus.SUCCESS, product });
+    return res.status(201).json({ status: EStatus.SUCCESS, product });
   }
 
   // async deleteCategory(req: Request, res: Response, next: NextFunction) {
@@ -166,7 +182,7 @@ export default class ProductController {
       id: productId
     });
 
-    res.json({ status: EStatus.SUCCESS, product: updatedProduct });
+    return res.json({ status: EStatus.SUCCESS, product: updatedProduct });
   }
 
   private serializePriceConfiguration(

@@ -28,13 +28,13 @@ export default class CategoryController {
       onlyValidData: true
     });
 
-    const categories = await this.categoryService.getAll(queryParams);
+    const result = await this.categoryService.getAll(queryParams);
 
     this.logger.info('All categories fetched', queryParams);
 
-    res.json({
+    return res.json({
       status: EStatus.SUCCESS,
-      ...categories
+      ...result
     });
   }
 
@@ -49,7 +49,7 @@ export default class CategoryController {
       id: categoryId
     });
 
-    res.json({ status: EStatus.SUCCESS, category });
+    return res.json({ status: EStatus.SUCCESS, category });
   }
 
   async createCategory(req: ICreateCategoryRequest, res: Response) {
@@ -70,7 +70,7 @@ export default class CategoryController {
     this.logger.info('Category has been created', {
       id: category._id
     });
-    res.status(201).json({ status: EStatus.SUCCESS, category });
+    return res.status(201).json({ status: EStatus.SUCCESS, category });
   }
 
   async deleteCategory(req: Request, res: Response, next: NextFunction) {
@@ -88,7 +88,7 @@ export default class CategoryController {
       id: categoryId
     });
 
-    res.json({ status: EStatus.SUCCESS });
+    return res.json({ status: EStatus.SUCCESS });
   }
 
   async updateCategory(
@@ -130,7 +130,7 @@ export default class CategoryController {
       attributes: serializedAttributes
     });
 
-    res.json({
+    return res.json({
       status: EStatus.SUCCESS,
       category: updatedCategory
     });
