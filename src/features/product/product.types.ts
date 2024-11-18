@@ -19,7 +19,7 @@ export interface IAttribute {
 export interface IProduct {
   productName: string;
   description: string;
-  image: string;
+  image: { imageId: string; url: string };
   priceConfiguration: IPriceConfiguration;
   attributes: Array<IAttribute>;
   tenantId: string;

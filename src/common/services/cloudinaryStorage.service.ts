@@ -1,4 +1,4 @@
-import { IFileData, IFileStorage } from '@common/types';
+import { IFileData, IFileStorage, IUploadedImage } from '@common/types';
 import { v2 as cloudinary } from 'cloudinary';
 import config from 'config';
 import { PassThrough } from 'stream';
@@ -12,7 +12,7 @@ export default class CloudinaryStorage implements IFileStorage {
     });
   }
 
-  // async upload(data: IFileData): Promise<void> {
+  // async upload(data: IFileData): Promise<IUploadedImage> {
   //   await cloudinary.uploader.upload(
   //     `data:image/jpeg;base64,${Buffer.from(data.fileData).toString('base64')}`,
   //     {
@@ -21,31 +21,37 @@ export default class CloudinaryStorage implements IFileStorage {
   //       folder: 'pizzahunt/products'
   //     }
   //   );
+
+  //   const imageId = data.filename;
+  //   const url = this.getObjectURI(`${data.folder}/${imageId}`);
+
+  //   return Promise.resolve({ imageId, url });
   // }
 
-  async upload(data: IFileData): Promise<void> {
-    await new Promise((resolve) => {
-      const stream = cloudinary.uploader.upload_stream({
-        resource_type: 'auto',
-        public_id: data.filename,
-        folder: 'pizzahunt/products'
-      });
-
-      const bufferStream = new PassThrough();
-      bufferStream.end(Buffer.from(data.fileData));
-      bufferStream.pipe(stream);
-
-      resolve(null);
+  async upload(data: IFileData): Promise<IUploadedImage> {
+    const stream = cloudinary.uploader.upload_stream({
+      resource_type: 'auto',
+      public_id: data.filename,
+      folder: `pizzahunt/${data.folder ?? ''}`
     });
+
+    const bufferStream = new PassThrough();
+    bufferStream.end(Buffer.from(data.fileData));
+    bufferStream.pipe(stream);
+
+    const imageId = data.filename;
+    const url = this.getObjectURI(`${data.folder ?? ''}/${imageId}`);
+
+    return Promise.resolve({ imageId, url });
   }
 
   async delete(filename: string | undefined): Promise<void> {
     if (!filename) return;
 
-    await cloudinary.uploader.destroy(filename);
+    await cloudinary.uploader.destroy(`pizzahunt/${filename}`);
   }
 
-  getObjectURI(): string {
-    throw new Error('Method not implemented.');
+  getObjectURI(filename: string | undefined): string {
+    return cloudinary.url(`pizzahunt/${filename}`);
   }
 }

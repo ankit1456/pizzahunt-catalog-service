@@ -41,8 +41,14 @@ const productSchema = new mongoose.Schema<IProduct>(
       required: true
     },
     image: {
-      type: String,
-      required: true
+      imageId: {
+        type: String,
+        required: true
+      },
+      url: {
+        type: String,
+        required: true
+      }
     },
     priceConfiguration: {
       type: Map,

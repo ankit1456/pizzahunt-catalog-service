@@ -21,12 +21,13 @@ import fileUpload from 'express-fileupload';
 
 const router = Router();
 
-const productService = new ProductService();
 // const s3Storage = new S3Storage();
 const cloudinaryStorage = new CloudinaryStorage();
+const productService = new ProductService();
 const productController = new ProductController(
   productService,
   cloudinaryStorage,
+  // s3Storage,
   logger
 );
 

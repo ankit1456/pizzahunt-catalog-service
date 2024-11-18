@@ -3,7 +3,7 @@ import {
   PutObjectCommand,
   S3Client
 } from '@aws-sdk/client-s3';
-import { IFileData, IFileStorage } from '@common/types';
+import { IFileData, IFileStorage, IUploadedImage } from '@common/types';
 import config from 'config';
 
 export default class S3Storage implements IFileStorage {
@@ -18,14 +18,21 @@ export default class S3Storage implements IFileStorage {
       }
     });
   }
-  async upload(data: IFileData): Promise<void> {
+  async upload(data: IFileData): Promise<IUploadedImage> {
     const objectParams = {
       Bucket: config.get('s3.bucket') as string,
-      Key: data.filename,
+      Key: `${data.folder ? data.folder + '/' : ''}${data.filename}`,
       Body: Buffer.from(data.fileData)
     };
 
     await this.client.send(new PutObjectCommand(objectParams));
+
+    const imageId = data.filename;
+    const url = this.getObjectURI(
+      `${data.folder ? data.folder + '/' : ''}${imageId}`
+    );
+
+    return { imageId, url };
   }
   async delete(filename: string | undefined): Promise<void> {
     const objectParams = {
@@ -36,7 +43,10 @@ export default class S3Storage implements IFileStorage {
     await this.client.send(new DeleteObjectCommand(objectParams));
   }
 
-  getObjectURI(): string {
-    throw new Error('Method not implemented.');
+  getObjectURI(filename: string | undefined): string {
+    const bucket = config.get('s3.bucket') as string;
+    const region = config.get('s3.region') as string;
+
+    return `https://${bucket}.s3.${region}.amazonaws.com/${filename}`;
   }
 }

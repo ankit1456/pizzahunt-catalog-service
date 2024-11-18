@@ -84,13 +84,14 @@ export default class ProductController {
 
     this.logger.debug('Creating product', req.body);
 
-    const image = req.files!.image as UploadedFile;
+    const image = req.files?.image as UploadedFile;
 
     const imageName = uuid();
 
-    await this.storage.upload({
+    const uploadedImage = await this.storage.upload({
       filename: imageName,
-      fileData: image?.data.buffer
+      fileData: image?.data.buffer,
+      folder: 'products'
     });
 
     const product = await this.productService.create({
@@ -99,7 +100,7 @@ export default class ProductController {
       priceConfiguration,
       attributes,
       categoryId,
-      image: imageName,
+      image: uploadedImage,
       isPublished,
       tenantId
     });
@@ -144,19 +145,24 @@ export default class ProductController {
         new ForbiddenError('You are not authorized to update this product')
       );
 
-    let imageName: string | undefined;
-    const prevImage = product.image;
+    const newImage = {
+      imageId: '',
+      url: ''
+    };
+    const prevImage = product.image.imageId;
 
     if (req.files?.image) {
       const image = req.files.image as UploadedFile;
-      imageName = uuid();
+      newImage.imageId = uuid();
 
-      await this.storage.upload({
-        filename: imageName,
-        fileData: image?.data.buffer
+      const { url } = await this.storage.upload({
+        filename: newImage.imageId,
+        fileData: image?.data.buffer,
+        folder: 'products'
       });
 
-      await this.storage.delete(prevImage);
+      newImage.url = url;
+      await this.storage.delete(`products/${prevImage}`);
     }
 
     const serializedPriceConfiguration = this.serializePriceConfiguration(
@@ -175,7 +181,7 @@ export default class ProductController {
       ...req.body,
       priceConfiguration: serializedPriceConfiguration,
       attributes: serializedAttributes,
-      image: imageName ?? prevImage
+      image: newImage.imageId && newImage.url ? newImage : product.image
     });
 
     this.logger.info('Product updated', {
