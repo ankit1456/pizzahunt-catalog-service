@@ -26,3 +26,5 @@ export enum EATTRIBUTE_NAME {
   SPICINESS = 'Spiciness',
   ALCOHOL = 'Alcohol'
 }
+
+export const API_ROUTE_PREFIX = '/api/catalog';

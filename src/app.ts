@@ -1,3 +1,4 @@
+import { API_ROUTE_PREFIX } from '@common/constants';
 import { NotFoundError } from '@common/errors';
 import healthRouter from '@common/health.router';
 import { globalErrorHandler } from '@common/middlewares';
@@ -20,9 +21,9 @@ app.use(
 app.use(cookieParser());
 app.use(express.json());
 
-app.use('/health', healthRouter);
-app.use('/api/categories', categoryRouter);
-app.use('/api/products', productRouter);
+app.use(`${API_ROUTE_PREFIX}/health`, healthRouter);
+app.use(`${API_ROUTE_PREFIX}/categories`, categoryRouter);
+app.use(`${API_ROUTE_PREFIX}/products`, productRouter);
 
 app.all('*', (req, res, next) =>
   next(new NotFoundError(`Can't find ${req.url} on the server`))
