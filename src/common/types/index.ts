@@ -1,17 +1,21 @@
+import { ERoles } from '@common/constants';
 import { Request } from 'express';
-
-export interface IGenericBodyRequest<T> extends Request {
-  body: T;
-}
+import mongoose from 'mongoose';
 
 export interface IAuthCookie {
   accessToken: string;
 }
 
-interface IRequestAuthPayload {
-  id?: string;
+export interface IRequestAuthPayload {
   sub: string;
-  role: string;
+  role: ERoles;
+  id?: string;
+  tenantId?: string;
+}
+
+export interface IGenericBodyRequest<T> extends Request {
+  body: T;
+  auth?: IRequestAuthPayload;
 }
 
 export interface IAuthRequest extends Request {
@@ -22,6 +26,12 @@ export interface IQueryParams {
   page: number;
   limit: number;
   q: string;
+}
+
+export interface IFilters {
+  tenantId?: string;
+  categoryId?: mongoose.Types.ObjectId;
+  isPublished?: boolean;
 }
 
 export * from './storage';

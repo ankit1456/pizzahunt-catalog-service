@@ -29,10 +29,12 @@ export default class CloudinaryStorage implements IFileStorage {
   // }
 
   async upload(data: IFileData): Promise<IUploadedImage> {
+    const folder = data.folder ? `/${data.folder}` : '';
+
     const stream = cloudinary.uploader.upload_stream({
-      resource_type: 'auto',
+      resource_type: 'image',
       public_id: data.filename,
-      folder: `pizzahunt/${data.folder ?? ''}`
+      folder: `pizzahunt${folder}`
     });
 
     const bufferStream = new PassThrough();
@@ -40,7 +42,7 @@ export default class CloudinaryStorage implements IFileStorage {
     bufferStream.pipe(stream);
 
     const imageId = data.filename;
-    const url = this.getObjectURI(`${data.folder ?? ''}/${imageId}`);
+    const url = this.getObjectURI(imageId, data.folder);
 
     return Promise.resolve({ imageId, url });
   }
@@ -48,10 +50,14 @@ export default class CloudinaryStorage implements IFileStorage {
   async delete(filename: string | undefined): Promise<void> {
     if (!filename) return;
 
-    await cloudinary.uploader.destroy(`pizzahunt/${filename}`);
+    await cloudinary.uploader.destroy(`pizzahunt/${filename}`, {
+      resource_type: 'image'
+    });
   }
 
-  getObjectURI(filename: string | undefined): string {
-    return cloudinary.url(`pizzahunt/${filename}`);
+  getObjectURI(filename: string, folder?: string): string {
+    const public_id = `pizzahunt/${folder ? `${folder}/` : ''}${filename}`;
+
+    return cloudinary.url(public_id);
   }
 }

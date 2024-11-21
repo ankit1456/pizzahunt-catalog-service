@@ -1,7 +1,6 @@
-import { IQueryParams } from '@common/types';
+import { IFilters, IQueryParams } from '@common/types';
 import { paginationLabels } from '@config';
-import ProductModel from '@features/product/product.model';
-import { IFilters, IProduct } from '@features/product/product.types';
+import { IProduct, ProductModel } from '@features/product';
 
 export default class ProductService {
   create(product: IProduct) {
@@ -59,9 +58,9 @@ export default class ProductService {
     return ProductModel.findById(productId);
   }
 
-  // delete(categoryId: string | undefined) {
-  //   return CategoryModel.findByIdAndDelete(categoryId);
-  // }
+  delete(productId: string | undefined) {
+    return ProductModel.findByIdAndDelete(productId);
+  }
 
   update(productId: string | undefined, productPayload: IProduct) {
     return ProductModel.findByIdAndUpdate(productId, productPayload, {

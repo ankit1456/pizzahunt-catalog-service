@@ -53,19 +53,9 @@ export default class CategoryController {
   }
 
   async createCategory(req: ICreateCategoryRequest, res: Response) {
-    const { categoryName, priceConfiguration, attributes } = req.body;
+    this.logger.debug('Creating category', req.body);
 
-    this.logger.debug('Creating category', {
-      categoryName,
-      priceConfiguration,
-      attributes
-    });
-
-    const category = await this.categoryService.create({
-      categoryName,
-      priceConfiguration,
-      attributes
-    });
+    const category = await this.categoryService.create(req.body);
 
     this.logger.info('Category has been created', {
       id: category._id

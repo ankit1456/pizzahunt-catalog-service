@@ -1,10 +1,10 @@
 import { ERoles, EStatus } from '@common/constants';
 import { ForbiddenError, NotFoundError } from '@common/errors';
-import { IFileStorage } from '@common/types';
+import { IFileStorage, IFilters } from '@common/types';
 import {
   IAttribute,
   ICreateProductRequest,
-  IFilters,
+  IDeleteProductRequest,
   IPriceConfiguration,
   IProductQueryParams,
   IUpdateProductRequest,
@@ -26,9 +26,8 @@ export default class ProductController {
     this.createProduct = this.createProduct.bind(this);
     this.updateProduct = this.updateProduct.bind(this);
     this.getProducts = this.getProducts.bind(this);
-    // this.getCategory = this.getCategory.bind(this);
-    // this.deleteCategory = this.deleteCategory.bind(this);
-    // this.updateCategory = this.updateCategory.bind(this);
+    this.getProduct = this.getProduct.bind(this);
+    this.deleteProduct = this.deleteProduct.bind(this);
   }
 
   async getProducts(req: Request, res: Response) {
@@ -58,31 +57,31 @@ export default class ProductController {
     });
   }
 
-  // async getCategory(req: Request, res: Response, next: NextFunction) {
-  //   const { categoryId } = req.params;
+  async getProduct(req: Request, res: Response, next: NextFunction) {
+    const { productId } = req.params;
 
-  //   const category = await this.categoryService.getOne(categoryId);
+    const product = await this.productService.getOne(productId);
 
-  //   if (!category) return next(new NotFoundError('Category not found'));
+    if (!product) return next(new NotFoundError('Product not found'));
 
-  //   this.logger.info('Category fetched', {
-  //     id: categoryId
-  //   });
+    this.logger.info('Product fetched', {
+      id: productId
+    });
 
-  //   res.json({ status: EStatus.SUCCESS, category });
-  // }
-  async createProduct(req: ICreateProductRequest, res: Response) {
-    const {
-      productName,
-      description,
-      priceConfiguration,
-      attributes,
-      categoryId,
-      isPublished,
-      tenantId
-    } = req.body;
+    return res.json({ status: EStatus.SUCCESS, product });
+  }
 
+  async createProduct(_req: Request, res: Response, next: NextFunction) {
+    const req = _req as ICreateProductRequest;
     this.logger.debug('Creating product', req.body);
+
+    const { tenantId, role } = req.auth!;
+    if (req.body.tenantId !== tenantId && role !== ERoles.ADMIN)
+      return next(
+        new ForbiddenError(
+          'You are not authorized to create product for this tenant'
+        )
+      );
 
     const image = req.files?.image as UploadedFile;
 
@@ -95,37 +94,13 @@ export default class ProductController {
     });
 
     const product = await this.productService.create({
-      productName,
-      description,
-      priceConfiguration,
-      attributes,
-      categoryId,
-      image: uploadedImage,
-      isPublished,
-      tenantId
+      ...req.body,
+      image: uploadedImage
     });
 
     this.logger.info('Product has been created', { id: product._id });
     return res.status(201).json({ status: EStatus.SUCCESS, product });
   }
-
-  // async deleteCategory(req: Request, res: Response, next: NextFunction) {
-  //   const { categoryId } = req.params;
-
-  //   this.logger.info('Deleting category', {
-  //     id: categoryId
-  //   });
-
-  //   const response = await this.categoryService.delete(categoryId);
-
-  //   if (!response) return next(new NotFoundError('Category not found'));
-
-  //   this.logger.info('Category deleted', {
-  //     id: categoryId
-  //   });
-
-  //   res.json({ status: EStatus.SUCCESS });
-  // }
 
   async updateProduct(_req: Request, res: Response, next: NextFunction) {
     const req = _req as IUpdateProductRequest;
@@ -138,7 +113,7 @@ export default class ProductController {
     const product = await this.productService.getOne(productId);
     if (!product) return next(new NotFoundError('Product not found'));
 
-    const { role, tenantId } = req.auth;
+    const { role, tenantId } = req.auth!;
 
     if (product.tenantId !== tenantId && role !== ERoles.ADMIN)
       return next(
@@ -191,6 +166,34 @@ export default class ProductController {
     return res.json({ status: EStatus.SUCCESS, product: updatedProduct });
   }
 
+  async deleteProduct(_req: Request, res: Response, next: NextFunction) {
+    const req = _req as IDeleteProductRequest;
+
+    const { productId } = req.params;
+
+    this.logger.info('Deleting product', {
+      id: productId
+    });
+
+    const product = await this.productService.delete(productId);
+    if (!product) return next(new NotFoundError('Product not found'));
+
+    const { tenantId, role } = req.auth;
+
+    if (product.tenantId !== tenantId && role !== ERoles.ADMIN)
+      return next(
+        new ForbiddenError('You are not authorized to delete this product')
+      );
+
+    const response = await this.productService.delete(productId);
+    await this.storage.delete(`products/${response?.image.imageId}`);
+
+    this.logger.info('Product deleted', {
+      id: productId
+    });
+
+    return res.json({ status: EStatus.SUCCESS });
+  }
   private serializePriceConfiguration(
     keysToRemove: string[] | undefined,
     existingPriceConfiguration: IPriceConfiguration,

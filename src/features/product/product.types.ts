@@ -1,5 +1,10 @@
-import { EPRICE_TYPE, ERoles } from '@common/constants';
-import { IGenericBodyRequest, IQueryParams } from '@common/types';
+import { EPRICE_TYPE } from '@common/constants';
+import {
+  IGenericBodyRequest,
+  IQueryParams,
+  IRequestAuthPayload
+} from '@common/types';
+import { Request } from 'express';
 import mongoose from 'mongoose';
 
 export interface IPriceConfiguration
@@ -27,14 +32,8 @@ export interface IProduct {
   isPublished: boolean;
 }
 
-interface IRequestAuthPayload {
-  sub: string;
-  role: ERoles;
-  id?: string;
-  tenantId?: string;
-}
-
 export interface ICreateProductRequest extends IGenericBodyRequest<IProduct> {}
+
 export interface IUpdateProductRequest
   extends IGenericBodyRequest<
     IProduct & {
@@ -43,7 +42,9 @@ export interface IUpdateProductRequest
         attributeNames?: Array<string>;
       };
     }
-  > {
+  > {}
+
+export interface IDeleteProductRequest extends Request {
   auth: IRequestAuthPayload;
 }
 
@@ -51,10 +52,4 @@ export interface IProductQueryParams extends IQueryParams {
   tenantId: string;
   categoryId: string;
   isPublished: boolean;
-}
-
-export interface IFilters {
-  tenantId?: string;
-  categoryId?: mongoose.Types.ObjectId;
-  isPublished?: boolean;
 }

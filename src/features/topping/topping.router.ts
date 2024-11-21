@@ -10,12 +10,12 @@ import {
 } from '@common/services';
 import { catchAsync } from '@common/utils';
 import { logger } from '@config';
-import ProductController from '@features/product/product.controller';
-import ProductService from '@features/product/product.service';
+import ToppingController from '@features/topping/topping.controller';
+import ToppingService from '@features/topping/topping.service';
 import {
-  createProductValidator,
-  updateProductValidator
-} from '@features/product/product.validator';
+  createToppingValidator,
+  updateToppingValidator
+} from '@features/topping/topping.validator';
 import { Router } from 'express';
 import fileUpload from 'express-fileupload';
 
@@ -23,9 +23,9 @@ const router = Router();
 
 // const s3Storage = new S3Storage();
 const cloudinaryStorage = new CloudinaryStorage();
-const productService = new ProductService();
-const productController = new ProductController(
-  productService,
+const toppingService = new ToppingService();
+const toppingController = new ToppingController(
+  toppingService,
   cloudinaryStorage,
   // s3Storage,
   logger
@@ -33,38 +33,38 @@ const productController = new ProductController(
 
 router
   .route('/')
-  .get(queryParamsValidator, catchAsync(productController.getProducts))
+  .get(queryParamsValidator, catchAsync(toppingController.getToppings))
   .post(
     authenticate,
     canAccess(ERoles.ADMIN, ERoles.MANAGER),
     fileUpload(),
-    createProductValidator,
+    createToppingValidator,
     sanitizeRequest,
-    catchAsync(productController.createProduct)
+    catchAsync(toppingController.createTopping)
   );
 
 router
-  .route('/:productId')
+  .route('/:toppingId')
   .get(
-    idValidator('productId'),
+    idValidator('toppingId'),
     sanitizeRequest,
-    catchAsync(productController.getProduct)
+    catchAsync(toppingController.getTopping)
+  )
+  .delete(
+    authenticate,
+    canAccess(ERoles.ADMIN, ERoles.MANAGER),
+    idValidator('toppingId'),
+    sanitizeRequest,
+    catchAsync(toppingController.deleteTopping)
   )
   .patch(
     authenticate,
     canAccess(ERoles.ADMIN, ERoles.MANAGER),
-    idValidator('productId'),
+    idValidator('toppingId'),
     fileUpload(),
-    updateProductValidator,
+    updateToppingValidator,
     sanitizeRequest,
-    catchAsync(productController.updateProduct)
-  )
-  .delete(
-    authenticate,
-    canAccess(ERoles.ADMIN),
-    idValidator('productId'),
-    sanitizeRequest,
-    catchAsync(productController.deleteProduct)
+    catchAsync(toppingController.updateTopping)
   );
 
 export default router;

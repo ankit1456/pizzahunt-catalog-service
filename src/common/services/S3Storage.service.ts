@@ -28,9 +28,7 @@ export default class S3Storage implements IFileStorage {
     await this.client.send(new PutObjectCommand(objectParams));
 
     const imageId = data.filename;
-    const url = this.getObjectURI(
-      `${data.folder ? data.folder + '/' : ''}${imageId}`
-    );
+    const url = this.getObjectURI(imageId, data.folder);
 
     return { imageId, url };
   }
@@ -43,10 +41,12 @@ export default class S3Storage implements IFileStorage {
     await this.client.send(new DeleteObjectCommand(objectParams));
   }
 
-  getObjectURI(filename: string | undefined): string {
+  getObjectURI(filename: string | undefined, folder?: string): string {
+    const filePath = folder ? `${folder}/${filename}` : filename;
+
     const bucket = config.get('s3.bucket') as string;
     const region = config.get('s3.region') as string;
 
-    return `https://${bucket}.s3.${region}.amazonaws.com/${filename}`;
+    return `https://${bucket}.s3.${region}.amazonaws.com/${filePath}`;
   }
 }
