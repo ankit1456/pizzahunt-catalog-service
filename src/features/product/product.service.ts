@@ -68,5 +68,3 @@ export default class ProductService {
     });
   }
 }
-
-// make categoryName unique

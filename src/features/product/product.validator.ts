@@ -140,11 +140,12 @@ export const createProductValidator = [
       isInEnum('attribute name', value, EATTRIBUTE_NAME)
     ),
 
-  body('attributes.*.value')
-    .if((_, { req }) => attributesExists(req as ICreateProductRequest))
-    .exists({ checkFalsy: true })
-    .withMessage('attribute value is required'),
-
+  body('attributes.*.value').if((_, { req }) =>
+    attributesExists(req as ICreateProductRequest)
+  ),
+  //TODO: value can be true or false add validation
+  // .exists({ checkFalsy: true })
+  // .withMessage('attribute value is required'),
   body('tenantId')
     .exists({ checkFalsy: true })
     .withMessage('tenant id is required')
@@ -157,7 +158,12 @@ export const createProductValidator = [
     .withMessage('category id is required')
     .bail()
     .isMongoId()
-    .withMessage('please provide a valid category id')
+    .withMessage('please provide a valid category id'),
+  body('isPublished').customSanitizer((isPublished) => {
+    return typeof isPublished === 'string' && isPublished === 'true'
+      ? true
+      : false;
+  })
 ];
 
 export const updateProductValidator = [
@@ -283,11 +289,11 @@ export const updateProductValidator = [
       isInEnum('attribute name', value, EATTRIBUTE_NAME)
     ),
 
-  body('attributes.*.value')
-    .if((_, { req }) => attributesExists(req as ICreateProductRequest))
-    .exists({ checkFalsy: true })
-    .withMessage('attribute value is required'),
-
+  body('attributes.*.value').if((_, { req }) =>
+    attributesExists(req as ICreateProductRequest)
+  ),
+  // .exists({ checkFalsy: true })
+  // .withMessage('attribute value is required'),
   body('tenantId')
     .optional()
     .isUUID()
@@ -312,6 +318,12 @@ export const updateProductValidator = [
 
       return config;
     }),
+
+  body('isPublished').customSanitizer((isPublished) => {
+    return typeof isPublished === 'string' && isPublished === 'true'
+      ? true
+      : false;
+  }),
 
   body('removePriceConfigurationOrAttribute.priceConfigurationKeys')
     .optional()
